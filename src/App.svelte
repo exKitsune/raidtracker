@@ -1,47 +1,65 @@
 <script>
-  import svelteLogo from './assets/svelte.svg'
-  import viteLogo from '/vite.svg'
-  import Counter from './lib/Counter.svelte'
+  import Router, { push, replace } from "svelte-spa-router";
+  import { wrap } from 'svelte-spa-router/wrap';
+  import { SvelteToast, toast } from '@zerodevx/svelte-toast';
+
+  import Track from "@/routes/Track/Track.svelte";
+  import Spectate from "./routes/Spectate.svelte";
+  import About from "./routes/About.svelte";
+
+  const routes = {
+    '/track': Track,
+    '/spec': Spectate,
+    '/about': About,
+    '*': wrap({
+      component: About,
+      conditions: [
+        // we just want to redirect to /track all the time
+        (detail) => {
+          return false;
+        }
+      ]
+    })
+  }
+
+  function conditionsFailed(event) {
+        replace('/track')
+	}
+
+    function routeLoaded(event) {
+	}
+
+  const toastOptions = {
+        duration: 3000,
+        pausable: true,
+        intro: { y: -64 },
+        classes: [
+            'customToast'
+        ]
+    };
 </script>
 
-<main>
-  <div>
-    <a href="https://vitejs.dev" target="_blank" rel="noreferrer">
-      <img src={viteLogo} class="logo" alt="Vite Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank" rel="noreferrer">
-      <img src={svelteLogo} class="logo svelte" alt="Svelte Logo" />
-    </a>
-  </div>
-  <h1>Vite + Svelte</h1>
+<Router {routes} on:conditionsFailed={conditionsFailed} on:routeLoaded={routeLoaded}/>
 
-  <div class="card">
-    <Counter />
-  </div>
+<div class="toastWrap">
+  <SvelteToast options={toastOptions} />
+</div>
 
-  <p>
-    Check out <a href="https://github.com/sveltejs/kit#readme" target="_blank" rel="noreferrer">SvelteKit</a>, the official Svelte app framework powered by Vite!
-  </p>
+<style lang="scss">
+  .toastWrap {
+        flex: 4;
 
-  <p class="read-the-docs">
-    Click on the Vite and Svelte logos to learn more
-  </p>
-</main>
-
-<style>
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
-  }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-  }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
-  }
-  .read-the-docs {
-    color: #888;
-  }
+        --toastContainerTop: 0.5rem;
+        --toastContainerRight: 36%;
+        --toastContainerBottom: auto;
+        --toastContainerLeft: 36%;
+        --toastWidth: 100%;
+        --toastMinHeight: 40px;
+        // --toastHeight: 40px;
+        // --toastMsgPadding: 0.35rem 0.25rem;
+        --toastPadding: 0 0.5rem;
+        --toastBarHeight: 3px;
+        // when working with double dash vars, add #{}
+        // --toastBarBackground: #{c(accent)};
+    }
 </style>
