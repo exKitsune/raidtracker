@@ -2,17 +2,20 @@
   import NavBar from "@/lib/NavBar.svelte";
   import SideBar from "@/routes/Track/components/SideBar.svelte";
 
+  import {raid_names} from "@/stores/track";
+  import RaidTracker from "./components/RaidTracker.svelte";
 
+  let selected_raid = $raid_names.length > 0 ? $raid_names[0] : null;
 </script>
 
 <NavBar />
 
 <main>
   <div id="sidebar_container">
-    <SideBar />
+    <SideBar saved_raids={$raid_names} bind:selected_raid/>
   </div>
   <div id="track_container">
-    track
+    <RaidTracker selected_raid={selected_raid}/>
   </div>
 </main>
 
@@ -22,11 +25,12 @@
     display: flex;
 
     #sidebar_container {
-      flex: 2;
+      flex: 1.5;
+      min-width: 15rem;
     }
 
     #track_container {
-      flex: 8;
+      flex: 8.5;
     }
   }
 </style>

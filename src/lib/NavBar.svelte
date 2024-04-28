@@ -25,7 +25,7 @@
     nav {
         background-color: $secondary-color;
         width: 100vw;
-        height: 3.5rem;
+        height: $navbar-height;
         display: inline-flex;
         gap: 0.25rem;
 
@@ -39,7 +39,7 @@
             padding-left: 1rem;
             padding-right: 1rem;
             font-size: large;
-            line-height: 3.5rem;
+            line-height: $navbar-height;
 
             a {
                 color: $color;
