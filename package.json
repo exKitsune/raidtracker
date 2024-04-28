@@ -20,6 +20,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.4.0",
     "idb-keyval": "^6.2.0",
+    "immer-loves-svelte": "^2.2.4",
     "peerjs": "^1.4.7",
     "sass": "^1.61.0",
     "svelte-preprocess": "^5.0.3",

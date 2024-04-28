@@ -2,6 +2,8 @@ import { toast } from "@zerodevx/svelte-toast";
 import { writable, get, derived } from "svelte/store";
 import { z } from "zod";
 import * as idb from 'idb-keyval';
+import { JOB_LIST } from "@/lib/FFXIV_Icons.svelte"
+import { DUTY_NAMES } from "@/lib/FFXIV_Duties.svelte";
 
 // the names of the raids that we are tracking
 // we'll make a new store for each raid
@@ -15,20 +17,26 @@ export const raid_names = derived(raids, $raids => $raids)
 // each raid has it's own store
 const raidStores = writable({})
 
+// z.enum wants a [string...] but a string[] will work just fine
+// @ts-ignore
+const JobEnum = z.enum(JOB_LIST)
+// @ts-ignore
+const DutyListEnum = z.enum(DUTY_NAMES)
+
 const raidStoreSchema = z.object({
     version: z.number().gte(0), // currently on version 1
     start_date: z.string().datetime(),
     end_date: z.nullable(z.string().datetime()),
-    wipe_reasons: z.object({
-        unknown: z.number().gte(0), // you literally don't know
-        everybody: z.number().gte(0), // multiple people messed up / everyone messed up, generally you can blame mulitple people at once
-        nobody: z.number().gte(0), // excusable reason, lag, car crashes into power pole outside
-        // wipe_numbers is which wipes were these
-        unknown_wipe_numbers: z.number().array(),
-        everybody_wipe_numbers: z.number().array(),
-        nobody_wipe_numbers: z.number().array(),
-        players: z.record(z.string(), z.number().array()) // multiple players can be part of the same wipe, we track which wipe they caused
-    })
+    duty: DutyListEnum,
+    current_wipe: z.number().gte(0), // tracking total wipes
+    // name: {
+    //      job: "PLD",
+    //      wipes: [1, 4, 10]
+    // }
+    players: z.record(z.string(), z.object({
+        job: JobEnum,
+        wipes: z.number().array()
+    }))
 })
 
 function getDefaultRaidStoreState() {
@@ -37,15 +45,8 @@ function getDefaultRaidStoreState() {
         version: 1,
         start_date: currentTime,
         end_date: null,
-        wipe_reasons: {
-            unknown: 0,
-            everybody: 0,
-            nobody: 0,
-            unknown_wipe_numbers: [],
-            everybody_wipe_numbers: [],
-            nobody_wipe_numbers: [],
-            players: {}
-        }
+        current_wipe: 0,
+        players: {}
     }
 
     // check our own default just to make sure we don't break anything when we update the app
@@ -53,16 +54,16 @@ function getDefaultRaidStoreState() {
 }
 
 // lets populate it
-get(raids).forEach(raid_name => {
-    raidStores.update(async state => {
-        // get the raid state from local storage
-        let savedRaidState = await idb.get("raid-" + raid_name)
+get(raids).forEach(async raid_name => {
+    // get the raid state from local storage
+    let savedRaidState = await idb.get("raid-" + raid_name)
 
-        let raidStore = writable(savedRaidState ? savedRaidState : getDefaultRaidStoreState())
+    let raidStore = writable(savedRaidState ? savedRaidState : getDefaultRaidStoreState())
+    
+    raidStores.update(state => {
         // track unsubscribe to delete it on raid delete, so no memory leak
         let unsub = raidStore.subscribe(state => idb.set("raid-" + raid_name, state))
-
-        // put the new store in our big store
+            // put the new store in our big store
         return {
             ...state,
             [raid_name]: {
@@ -75,6 +76,7 @@ get(raids).forEach(raid_name => {
 
 // a function to get each raid store
 export function getRaidStore(raid_name) {
+    // we have to check by object key because the init population is async
     if(raid_name in get(raidStores)) {
         return get(raidStores)[raid_name].store
     } 
@@ -135,7 +137,7 @@ export function deleteRaid(raid_name) {
     delete raidStoresCpy[raid_name]
     
     idb.del("raid-" + raid_name)
-
+    toast.push(`${raid_name} successfully deleted`)
     return true
 }
 

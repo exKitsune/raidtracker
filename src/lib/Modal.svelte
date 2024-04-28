@@ -4,7 +4,7 @@
 
 	let dialog; // HTMLDialogElement
 
-	export let close = () => {if (dialog && showModal) dialog.close()}
+	export const close = () => {if (dialog && showModal) dialog.close()}
 
 	$: if (dialog && showModal) dialog.showModal();
 </script>
@@ -22,7 +22,7 @@
             </div>
             <div style="flex: 1">
                 <!-- svelte-ignore a11y-autofocus -->
-		        <button autofocus on:click={() => dialog.close()}>
+		        <button on:click={() => dialog.close()}>
                     <img src={closeIcon} alt="close">
                 </button>
             </div>
@@ -38,7 +38,7 @@
 	dialog {
         min-width: 32em;
 		max-width: 48em;
-		border-radius: 0.2em;
+		border-radius: 1em;
 		border: none;
 		padding: 0;
 

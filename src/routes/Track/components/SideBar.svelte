@@ -17,9 +17,8 @@
             <img src={import_svg} alt="import">
         </button>
     </div>
-    
-
     <hr>
+    
     {#each saved_raids as saved_raid}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <div class:active={selected_raid === saved_raid}

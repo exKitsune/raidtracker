@@ -5,7 +5,7 @@
   import {raid_names} from "@/stores/track";
   import RaidTracker from "./components/RaidTracker.svelte";
 
-  let selected_raid = $raid_names.length > 0 ? $raid_names[0] : null;
+  let selected_raid = '';
 </script>
 
 <NavBar />
