@@ -6,8 +6,8 @@ import * as idb from 'idb-keyval';
 // the names of the raids that we are tracking
 // we'll make a new store for each raid
 let savedRaids = await idb.get("raids") // a JSON object of type [str...]
-const raids = writable(savedRaids ? JSON.parse(savedRaids) : [])
-raids.subscribe(state => idb.set("raids", JSON.stringify(state)))
+const raids = writable(savedRaids ? savedRaids : [])
+raids.subscribe(state => idb.set("raids", state))
 
 // export a readable only version of raids, to prevent accidental edits
 export const raid_names = derived(raids, $raids => $raids)
@@ -58,9 +58,9 @@ get(raids).forEach(raid_name => {
         // get the raid state from local storage
         let savedRaidState = await idb.get("raid-" + raid_name)
 
-        let raidStore = writable(savedRaidState ? JSON.parse(savedRaidState) : getDefaultRaidStoreState())
+        let raidStore = writable(savedRaidState ? savedRaidState : getDefaultRaidStoreState())
         // track unsubscribe to delete it on raid delete, so no memory leak
-        let unsub = raidStore.subscribe(state => idb.set("raid-" + raid_name, JSON.stringify(state)))
+        let unsub = raidStore.subscribe(state => idb.set("raid-" + raid_name, state))
 
         // put the new store in our big store
         return {
@@ -98,9 +98,9 @@ export function addRaid(raid_name) {
     raidStores.update(state => {
         let raidStore = writable(getDefaultRaidStoreState())
 
-        idb.set('raid-' + raid_name, JSON.stringify(get(raidStore)))
+        idb.set('raid-' + raid_name, get(raidStore))
 
-        let unsub = raidStore.subscribe(state => idb.set("raid-" + raid_name, JSON.stringify(state)))
+        let unsub = raidStore.subscribe(state => idb.set("raid-" + raid_name, state))
 
         return {
             ...state,
@@ -169,9 +169,9 @@ export function importRaid(raid_name, import_string) {
     raidStores.update(state => {
         let raidStore = writable(raid_data)
 
-        idb.set('raid-' + raid_name, JSON.stringify(get(raidStore)))
+        idb.set('raid-' + raid_name, get(raidStore))
 
-        let unsub = raidStore.subscribe(state => idb.set("raid-" + raid_name, JSON.stringify(state)))
+        let unsub = raidStore.subscribe(state => idb.set("raid-" + raid_name, state))
 
         return {
             ...state,
